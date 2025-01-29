@@ -1,0 +1,72 @@
+<launch>
+				<!--  ************** Odometry ***************  -->
+	
+	<param name="robot_description" command="cat $(find lab_mob_rob)/urdf/lab.urdf" />
+	
+	<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+	
+	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+	
+	<node name="serial_node" pkg="rosserial_python" type="serial_node.py" output="screen">
+		<param name="port" value="/dev/ttyACM0"/>
+		<param name="baud" value="57600"/>
+	</node>
+		
+	<node name="laba" pkg="lab_mob_rob" type="lab_mob_rob_node">
+		<param name="publish_tf" value="true" />
+    		<param name="publish_rate" value="10.0" />
+    		<param name="linear_scale_positive" value="1.025" />
+    		<param name="linear_scale_negative" value="1.025" />
+    		<param name="angular_scale_positive" value="1.078" />
+    		<param name="angular_scale_negative" value="1.078" />
+		<param name="angular_scale_accel" value="0.0" />
+	</node>	
+<!---->
+		<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+  	  	<rosparam file="$(find nox)/cfg/costmap_common_params.yaml" command="load" ns="global_costmap" />
+  	 	<rosparam file="$(find nox)/cfg/costmap_common_params.yaml" command="load" ns="local_costmap" />
+  		<rosparam file="$(find nox)/cfg/local_costmap_params.yaml" command="load" />
+  		<rosparam file="$(find nox)/cfg/global_costmap_params.yaml" command="load" />
+  		<rosparam file="$(find nox)/cfg/dwa_local_planner_params.yaml" command="load" />
+
+		<param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+		<param name="controller_frequency" value="5.0" />
+		<param name="controller_patience" value="15.0" />
+
+      		<param name="clearing_rotation_allowed" value="true" /> <!-- Nox is able to rotate in place -->
+	</node>
+	
+    <param name="use_sim_time" value="true"/>
+    <node pkg="gmapping" type="slam_gmapping" name="slam_gmapping" output="screen">
+     <!-- <remap from="scan" to="base_scan"/>-->
+      <param name="map_update_interval" value="5.0"/>
+      <param name="maxUrange" value="16.0"/>
+      <param name="sigma" value="0.05"/>
+      <param name="kernelSize" value="1"/>
+      <param name="lstep" value="0.05"/>
+      <param name="astep" value="0.05"/>
+      <param name="iterations" value="5"/>
+      <param name="lsigma" value="0.075"/>
+      <param name="ogain" value="3.0"/>
+      <param name="lskip" value="0"/>
+      <param name="srr" value="0.1"/>
+      <param name="srt" value="0.2"/>
+      <param name="str" value="0.1"/>
+      <param name="stt" value="0.2"/>
+      <param name="linearUpdate" value="1.0"/>
+      <param name="angularUpdate" value="0.5"/>
+      <param name="temporalUpdate" value="3.0"/>
+      <param name="resampleThreshold" value="0.5"/>
+      <param name="particles" value="30"/>
+      <param name="xmin" value="-50.0"/>
+      <param name="ymin" value="-50.0"/>
+      <param name="xmax" value="50.0"/>
+      <param name="ymax" value="50.0"/>
+      <param name="delta" value="0.05"/>
+      <param name="llsamplerange" value="0.01"/>
+      <param name="llsamplestep" value="0.01"/>
+      <param name="lasamplerange" value="0.005"/>
+      <param name="lasamplestep" value="0.005"/>
+    </node>	
+	
+</launch>
